@@ -1,0 +1,56 @@
+
+name: Tests et qualité du code
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Installer les dependances
+        run: pip install -r requirements.txt
+
+      - name: Verifier la qualite
+        run: pylint main.py test_main.py
+
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Installer les dependances
+        run: pip install -r requirements.txt
+
+      - name: Executer les tests
+        run: pytest -v --junitxml=report.xml
+
+      - name: Calculer la couverture
+        run: pytest -v --cov=main --cov-report=term --cov-report=xml:coverage.xml --cov-report=html
+
+      - name: Enregistrer les rapports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapports-tests-et-couverture
+          path: |
+            report.xml
+            coverage.xml
+            htmlcov/
